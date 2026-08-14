@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>后台管理 - xuqiec</title>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-dark: #4338ca;
+      --success: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --bg: #f3f4f6;
+      --card-bg: #ffffff;
+      --text: #1f2937;
+      --text-light: #6b7280;
+      --border: #e5e7eb;
+      --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 2rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    h1 { font-size: 2rem; margin-bottom: 0.5rem; color: var(--primary-dark); }
+    h2 { margin: 2rem 0 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--primary); display: flex; align-items: center; gap: 0.5rem; font-size: 1.5rem; }
+    .notice { background: #ecfdf5; border-left: 4px solid var(--success); padding: 0.8rem 1rem; border-radius: 0 8px 8px 0; margin-bottom: 1.5rem; color: #065f46; font-size: 0.9rem; }
+    .form-section { background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow); padding: 1.5rem; margin-bottom: 1.5rem; }
+    .form-section h3 { margin-bottom: 1rem; color: var(--primary); }
+    label { display: block; margin-top: 0.8rem; font-weight: 500; font-size: 0.9rem; color: var(--text); }
+    input, textarea, select { width: 100%; padding: 0.6rem 0.8rem; margin-top: 0.3rem; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; background: #fafafa; transition: border-color 0.2s, box-shadow 0.2s; }
+    input:focus, textarea:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229,0.1); background: white; }
+    .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0 1rem; }
+    .file-upload-row { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-top: 0.3rem; }
+    .file-upload-row input[type="file"] { flex: 1; min-width: 200px; padding: 0.4rem; background: transparent; border: none; }
+    .img-preview { max-width: 100px; max-height: 100px; border-radius: 8px; border: 1px solid var(--border); object-fit: cover; margin-top: 0.5rem; }
+    .table-thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); }
+    button { padding: 0.5rem 1rem; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 500; transition: background 0.2s, transform 0.1s; margin-right: 0.5rem; }
+    button:hover { transform: translateY(-1px); }
+    button:active { transform: translateY(0); }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-danger { background: var(--danger); color: white; }
+    .btn-danger:hover { background: #dc2626; }
+    .btn-secondary { background: #e5e7eb; color: var(--text); }
+    .btn-secondary:hover { background: #d1d5db; }
+    table { width: 100%; border-collapse: collapse; background: var(--card-bg); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); margin-bottom: 0.5rem; }
+    th, td { padding: 0.8rem 0.6rem; text-align: left; border-bottom: 1px solid var(--border); vertical-align: middle; font-size: 0.9rem; }
+    th { background: #f9fafb; font-weight: 600; color: var(--text); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fafafa; }
+    .action-btns { display: flex; gap: 0.3rem; }
+    .hidden { display: none; }
+    #toast-container { position: fixed; top: 20px; right: 20px; z-index: 99999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+    .toast { min-width: 200px; max-width: 320px; padding: 12px 18px; border-radius: 8px; color: white; font-size: 0.9rem; box-shadow: 0 4px 12px rgba(0,0,0,0.15); opacity: 0; transform: translateX(30px); transition: opacity 0.3s, transform 0.3s; pointer-events: auto; }
+    .toast.show { opacity: 1; transform: translateX(0); }
+    .toast-success { background: var(--success); }
+    .toast-error { background: var(--danger); }
+    .toast-warning { background: var(--warning); }
+    .toast-info { background: var(--primary); }
+
+    /* 分页控件样式 */
+    .pagination-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin: 10px 0 20px;
+      flex-wrap: wrap;
+    }
+    .pagination-controls button {
+      padding: 6px 14px;
+      font-size: 0.85rem;
+    }
+    .pagination-controls span {
+      font-size: 0.9rem;
+      color: var(--text-light);
+    }
+    .pagination-controls input[type="number"] {
+      width: 60px;
+      text-align: center;
+      margin: 0;
+      padding: 6px;
+    }
+
+    @media (max-width: 768px) {
+      body { padding: 1rem; }
+      .form-row { grid-template-columns: 1fr; }
+      table { display: block; overflow-x: auto; }
+      #toast-container { top: 10px; right: 10px; left: 10px; align-items: center; }
+      .toast { max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <h1>🛠️ xuqiec 后台管理</h1>
+  <p class="notice">✅ 所有修改会直接写入本地 <code>data</code> 文件夹下的 JS 文件。修改完成后，需要手动推送到 GitHub 才能更新线上网站。</p>
+  <div id="toast-container"></div>
+
+  <!-- 商品管理 -->
+  <h2>📦 商品目录管理</h2>
+  <div class="form-section">
+    <h3 id="productFormTitle">新增商品</h3>
+    <form id="productForm">
+      <input type="hidden" id="productId">
+      <input type="hidden" id="productImageExt">
+      <div class="form-row">
+        <div><label>ID</label><input type="number" id="productIdInput" placeholder="自动生成，可修改" required></div>
+        <div><label>英文标题</label><input type="text" id="productTitleEn" placeholder="例如 Labubu Keychain"></div>
+        <div><label>中文标题</label><input type="text" id="productTitleCn" placeholder="例如 labubu-p1"></div>
+        <div><label>价格</label><input type="number" step="0.01" id="productPrice" placeholder="例如 0.76"></div>
+      </div>
+      <div class="form-row">
+        <div><label>分类</label><select id="productCategory"><option value="keychain">🔑 Keychain</option><option value="jewelry">💎 Jewelry</option><option value="others">📁 Others</option></select></div>
+        <div><label>徽章（可选）</label><input type="text" id="productBadge" placeholder="例如 Hot<br>热卖"></div>
+        <div><label>alt 描述</label><input type="text" id="productAlt" placeholder="例如 树脂"></div>
+      </div>
+      <label>商品图片</label>
+      <div class="file-upload-row">
+        <input type="file" id="productImageFile" accept="image/*">
+        <span id="productImageName" style="color: var(--text-light);"></span>
+        <img id="productImagePreview" class="img-preview hidden" src="" alt="预览">
+      </div>
+      <div style="margin-top: 1rem;">
+        <button type="submit" class="btn-primary">💾 保存</button>
+        <button type="button" class="btn-secondary" onclick="resetProductForm()">取消</button>
+      </div>
+    </form>
+  </div>
+  <table>
+    <thead><tr><th>ID</th><th>图片</th><th>英文标题</th><th>中文标题</th><th>价格</th><th>分类</th><th>操作</th></tr></thead>
+    <tbody id="productTable"></tbody>
+  </table>
+  <div class="pagination-controls">
+    <button onclick="prevProductPage()">← 上一页</button>
+    <span id="productPageInfo">第 1 页 / 共 1 页</span>
+    <input type="number" id="productPageInput" min="1" placeholder="页码">
+    <button onclick="jumpProductPage()">跳转</button>
+    <button onclick="nextProductPage()">下一页 →</button>
+  </div>
+
+  <!-- 案例管理 -->
+  <h2>✨ 精选案例管理</h2>
+  <div class="form-section">
+    <h3 id="caseFormTitle">新增案例</h3>
+    <form id="caseForm">
+      <input type="hidden" id="caseId">
+      <input type="hidden" id="caseImageExt">
+      <div class="form-row">
+        <div><label>ID</label><input type="number" id="caseIdInput" placeholder="自动生成，可修改" required></div>
+        <div><label>英文标签</label><input type="text" id="caseTagEn" placeholder="例如 Trend‑Series Customization"></div>
+        <div><label>中文标签</label><input type="text" id="caseTagCn" placeholder="例如 潮流系列定制"></div>
+      </div>
+      <div class="form-row">
+        <div><label>英文标题</label><input type="text" id="caseTitleEn" placeholder="例如 Y2K Fashion Keychains"></div>
+        <div><label>中文标题</label><input type="text" id="caseTitleCn" placeholder="例如 时尚钥匙扣"></div>
+      </div>
+      <div class="form-row">
+        <div><label>英文描述</label><input type="text" id="caseDescEn" placeholder="例如 Custom‑made for..."></div>
+        <div><label>中文描述</label><input type="text" id="caseDescCn" placeholder="例如 Y2K 设计"></div>
+      </div>
+      <div class="form-row">
+        <div><label>英文来源</label><input type="text" id="caseOriginEn" placeholder="例如 From South Korea"></div>
+        <div><label>中文来源</label><input type="text" id="caseOriginCn" placeholder="例如 韩国"></div>
+      </div>
+      <label>案例图片</label>
+      <div class="file-upload-row">
+        <input type="file" id="caseImageFile" accept="image/*">
+        <span id="caseImageName" style="color: var(--text-light);"></span>
+        <img id="caseImagePreview" class="img-preview hidden" src="" alt="预览">
+      </div>
+      <div style="margin-top: 1rem;">
+        <button type="submit" class="btn-primary">💾 保存</button>
+        <button type="button" class="btn-secondary" onclick="resetCaseForm()">取消</button>
+      </div>
+    </form>
+  </div>
+  <table>
+    <thead><tr><th>ID</th><th>图片</th><th>英文标题</th><th>中文标题</th><th>来源</th><th>操作</th></tr></thead>
+    <tbody id="caseTable"></tbody>
+  </table>
+  <div class="pagination-controls">
+    <button onclick="prevCasePage()">← 上一页</button>
+    <span id="casePageInfo">第 1 页 / 共 1 页</span>
+    <input type="number" id="casePageInput" min="1" placeholder="页码">
+    <button onclick="jumpCasePage()">跳转</button>
+    <button onclick="nextCasePage()">下一页 →</button>
+  </div>
+
+  <script>
+    const API = '';
+
+    // 分页状态
+    const PRODUCTS_PER_PAGE = 10;
+    const CASES_PER_PAGE = 10;
+    let productCurrentPage = 1;
+    let caseCurrentPage = 1;
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      toast.textContent = message;
+      container.appendChild(toast);
+      void toast.offsetWidth;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => {
+          if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 300);
+      }, 2500);
+    }
+
+    function getExtFromPath(path) {
+      const parts = path.split('.');
+      return parts.length > 1 ? '.' + parts[parts.length - 1] : '';
+    }
+
+    // 图片加载失败时自动尝试其他常见扩展名
+    window.handleThumbError = function(img, base) {
+      const exts = ['.jpg', '.jpeg', '.png', '.avif', '.webp', '.gif'];
+      let index = parseInt(img.dataset.fallbackIndex || '-1');
+      const currentSrc = img.getAttribute('src');
+      const cleanSrc = currentSrc.split('?')[0];
+      const currentExt = cleanSrc.substring(cleanSrc.lastIndexOf('.')).toLowerCase();
+      const currentIndex = exts.indexOf(currentExt);
+      if (currentIndex !== -1) index = currentIndex;
+      index++;
+      if (index < exts.length) {
+        img.dataset.fallbackIndex = index;
+        img.src = `/src/images/${base}${exts[index]}?t=${Date.now()}`;
+      } else {
+        img.onerror = null;
+        img.style.display = 'none';
+      }
+    };
+
+    // ========== 商品管理（含分页和跳转） ==========
+    async function loadProducts() {
+      const res = await fetch(API + '/api/products');
+      const products = await res.json();
+
+      const totalPages = Math.ceil(products.length / PRODUCTS_PER_PAGE) || 1;
+      if (productCurrentPage > totalPages) productCurrentPage = totalPages;
+      if (productCurrentPage < 1) productCurrentPage = 1;
+
+      const start = (productCurrentPage - 1) * PRODUCTS_PER_PAGE;
+      const pageItems = products.slice(start, start + PRODUCTS_PER_PAGE);
+
+      const tbody = document.getElementById('productTable');
+      tbody.innerHTML = pageItems.map(p => {
+        const ext = p.imageExt || '.jpg';
+        const imgSrc = `/src/images/p${p.id}${ext}?t=${Date.now()}`;
+        return `
+        <tr>
+          <td>${p.id}</td>
+          <td><img class="table-thumb" src="${imgSrc}" alt="商品图" onerror="handleThumbError(this, 'p${p.id}')"></td>
+          <td>${p.titleEn || ''}</td>
+          <td>${p.titleCn || ''}</td>
+          <td>${p.price || ''}</td>
+          <td>${p.category || ''}</td>
+          <td>
+            <div class="action-btns">
+              <button class="btn-secondary" onclick="editProduct(${p.id})">✏️ 编辑</button>
+              <button class="btn-danger" onclick="deleteProduct(${p.id})">🗑️ 删除</button>
+            </div>
+          </td>
+        </tr>
+      `;
+      }).join('');
+
+      document.getElementById('productPageInfo').textContent = `第 ${productCurrentPage} 页 / 共 ${totalPages} 页`;
+    }
+
+    function prevProductPage() {
+      if (productCurrentPage > 1) {
+        productCurrentPage--;
+        loadProducts();
+      }
+    }
+
+    function nextProductPage() {
+      productCurrentPage++;
+      loadProducts();
+    }
+
+    function jumpProductPage() {
+      const input = document.getElementById('productPageInput');
+      const page = parseInt(input.value);
+      if (isNaN(page) || page < 1) {
+        showToast('请输入有效页码', 'warning');
+        return;
+      }
+      productCurrentPage = page;
+      loadProducts();
+      input.value = '';
+    }
+
+    function resetProductForm() {
+      document.getElementById('productForm').reset();
+      document.getElementById('productId').value = '';
+      document.getElementById('productImageExt').value = '';
+      document.getElementById('productImageName').textContent = '';
+      document.getElementById('productImagePreview').classList.add('hidden');
+      document.getElementById('productFormTitle').innerText = '新增商品';
+      fetch(API + '/api/products').then(r => r.json()).then(products => {
+        const nextId = products.length ? Math.max(...products.map(p => p.id)) + 1 : 1;
+        document.getElementById('productIdInput').value = nextId;
+      });
+    }
+
+    async function editProduct(id) {
+      const res = await fetch(API + '/api/products');
+      const products = await res.json();
+      const p = products.find(x => x.id === id);
+      if (!p) return;
+      document.getElementById('productId').value = p.id;
+      document.getElementById('productIdInput').value = p.id;
+      document.getElementById('productTitleEn').value = p.titleEn || '';
+      document.getElementById('productTitleCn').value = p.titleCn || '';
+      const priceStr = p.price || '';
+      const priceNum = priceStr.replace(/[^0-9.]/g, '');
+      document.getElementById('productPrice').value = priceNum;
+      document.getElementById('productCategory').value = p.category || 'others';
+      document.getElementById('productBadge').value = p.badge || '';
+      document.getElementById('productAlt').value = p.alt || '';
+      const ext = p.imageExt || '.jpg';
+      document.getElementById('productImageExt').value = ext;
+      document.getElementById('productImageName').textContent = `当前图片: p${p.id}${ext}`;
+      const preview = document.getElementById('productImagePreview');
+      preview.src = `/src/images/p${p.id}${ext}?t=${Date.now()}`;
+      preview.onerror = function() { handleThumbError(preview, 'p' + p.id); };
+      preview.classList.remove('hidden');
+      document.getElementById('productFormTitle').innerText = '编辑商品';
+      window.scrollTo(0, 0);
+    }
+
+    async function deleteProduct(id) {
+      if (!confirm('确定删除该商品？')) return;
+      const res = await fetch(API + '/api/products/' + id, { method: 'DELETE' });
+      if (res.ok) {
+        showToast('删除成功', 'success');
+        const total = await (await fetch(API + '/api/products')).json();
+        const totalPages = Math.ceil(total.length / PRODUCTS_PER_PAGE) || 1;
+        if (productCurrentPage > totalPages) productCurrentPage = totalPages;
+        loadProducts();
+      } else {
+        showToast('删除失败', 'error');
+      }
+    }
+
+    document.getElementById('productImageFile').addEventListener('change', async function() {
+      const file = this.files[0];
+      if (!file) return;
+      const id = document.getElementById('productIdInput').value;
+      if (!id) {
+        showToast('请先填写或确认 ID', 'warning');
+        this.value = '';
+        return;
+      }
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('prefix', `p${id}`);
+      try {
+        const res = await fetch(API + '/api/upload', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (res.ok) {
+          const ext = getExtFromPath(data.path);
+          document.getElementById('productImageExt').value = ext;
+          document.getElementById('productImageName').textContent = `已上传: p${id}${ext}`;
+          const preview = document.getElementById('productImagePreview');
+          preview.src = data.path + '?t=' + Date.now();
+          preview.onerror = function() { handleThumbError(preview, 'p' + id); };
+          preview.classList.remove('hidden');
+
+          const editingId = document.getElementById('productId').value;
+          if (editingId) {
+            const productsRes = await fetch(API + '/api/products');
+            const products = await productsRes.json();
+            const p = products.find(x => x.id == editingId);
+            if (p) {
+              p.imageExt = ext;
+              await fetch(API + '/api/products/' + editingId, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(p)
+              });
+              loadProducts();
+            }
+          }
+          showToast('图片上传成功', 'success');
+        } else {
+          showToast('上传失败：' + (data.error || '未知错误'), 'error');
+        }
+      } catch (err) {
+        showToast('上传出错：' + err.message, 'error');
+      }
+    });
+
+    document.getElementById('productForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('productIdInput').value;
+      const rawPrice = document.getElementById('productPrice').value;
+      const data = {
+        id: parseInt(id),
+        titleEn: document.getElementById('productTitleEn').value,
+        titleCn: document.getElementById('productTitleCn').value,
+        price: rawPrice ? '$ ' + rawPrice : '',
+        category: document.getElementById('productCategory').value,
+        badge: document.getElementById('productBadge').value,
+        alt: document.getElementById('productAlt').value,
+        imageExt: document.getElementById('productImageExt').value || '.jpg'
+      };
+      const editingId = document.getElementById('productId').value;
+      if (editingId) {
+        const res = await fetch(API + '/api/products/' + editingId, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        if (res.ok) { showToast('修改成功', 'success'); resetProductForm(); loadProducts(); }
+        else showToast('修改失败', 'error');
+      } else {
+        const res = await fetch(API + '/api/products', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        if (res.ok) { showToast('新增成功', 'success'); resetProductForm(); loadProducts(); }
+        else showToast('新增失败', 'error');
+      }
+    });
+
+    // ========== 案例管理（含分页和跳转） ==========
+    async function loadCases() {
+      const res = await fetch(API + '/api/cases');
+      const cases = await res.json();
+
+      const totalPages = Math.ceil(cases.length / CASES_PER_PAGE) || 1;
+      if (caseCurrentPage > totalPages) caseCurrentPage = totalPages;
+      if (caseCurrentPage < 1) caseCurrentPage = 1;
+
+      const start = (caseCurrentPage - 1) * CASES_PER_PAGE;
+      const pageItems = cases.slice(start, start + CASES_PER_PAGE);
+
+      const tbody = document.getElementById('caseTable');
+      tbody.innerHTML = pageItems.map(c => {
+        const ext = c.imageExt || '.jpg';
+        const imgSrc = `/src/images/product${c.id}${ext}?t=${Date.now()}`;
+        return `
+        <tr>
+          <td>${c.id}</td>
+          <td><img class="table-thumb" src="${imgSrc}" alt="案例图" onerror="handleThumbError(this, 'product${c.id}')"></td>
+          <td>${c.titleEn || ''}</td>
+          <td>${c.titleCn || ''}</td>
+          <td>${c.originEn || ''}<br>${c.originCn || ''}</td>
+          <td>
+            <div class="action-btns">
+              <button class="btn-secondary" onclick="editCase(${c.id})">✏️ 编辑</button>
+              <button class="btn-danger" onclick="deleteCase(${c.id})">🗑️ 删除</button>
+            </div>
+          </td>
+        </tr>
+      `;
+      }).join('');
+
+      document.getElementById('casePageInfo').textContent = `第 ${caseCurrentPage} 页 / 共 ${totalPages} 页`;
+    }
+
+    function prevCasePage() {
+      if (caseCurrentPage > 1) {
+        caseCurrentPage--;
+        loadCases();
+      }
+    }
+
+    function nextCasePage() {
+      caseCurrentPage++;
+      loadCases();
+    }
+
+    function jumpCasePage() {
+      const input = document.getElementById('casePageInput');
+      const page = parseInt(input.value);
+      if (isNaN(page) || page < 1) {
+        showToast('请输入有效页码', 'warning');
+        return;
+      }
+      caseCurrentPage = page;
+      loadCases();
+      input.value = '';
+    }
+
+    function resetCaseForm() {
+      document.getElementById('caseForm').reset();
+      document.getElementById('caseId').value = '';
+      document.getElementById('caseImageExt').value = '';
+      document.getElementById('caseImageName').textContent = '';
+      document.getElementById('caseImagePreview').classList.add('hidden');
+      document.getElementById('caseFormTitle').innerText = '新增案例';
+      fetch(API + '/api/cases').then(r => r.json()).then(cases => {
+        const nextId = cases.length ? Math.max(...cases.map(c => c.id)) + 1 : 1;
+        document.getElementById('caseIdInput').value = nextId;
+      });
+    }
+
+    async function editCase(id) {
+      const res = await fetch(API + '/api/cases');
+      const cases = await res.json();
+      const c = cases.find(x => x.id === id);
+      if (!c) return;
+      document.getElementById('caseId').value = c.id;
+      document.getElementById('caseIdInput').value = c.id;
+      document.getElementById('caseTagEn').value = c.tagEn || '';
+      document.getElementById('caseTagCn').value = c.tagCn || '';
+      document.getElementById('caseTitleEn').value = c.titleEn || '';
+      document.getElementById('caseTitleCn').value = c.titleCn || '';
+      document.getElementById('caseDescEn').value = c.descEn || '';
+      document.getElementById('caseDescCn').value = c.descCn || '';
+      document.getElementById('caseOriginEn').value = c.originEn || '';
+      document.getElementById('caseOriginCn').value = c.originCn || '';
+      const ext = c.imageExt || '.jpg';
+      document.getElementById('caseImageExt').value = ext;
+      document.getElementById('caseImageName').textContent = `当前图片: product${c.id}${ext}`;
+      const preview = document.getElementById('caseImagePreview');
+      preview.src = `/src/images/product${c.id}${ext}?t=${Date.now()}`;
+      preview.onerror = function() { handleThumbError(preview, 'product' + c.id); };
+      preview.classList.remove('hidden');
+      document.getElementById('caseFormTitle').innerText = '编辑案例';
+      window.scrollTo(0, 0);
+    }
+
+    async function deleteCase(id) {
+      if (!confirm('确定删除该案例？')) return;
+      const res = await fetch(API + '/api/cases/' + id, { method: 'DELETE' });
+      if (res.ok) {
+        showToast('删除成功', 'success');
+        const total = await (await fetch(API + '/api/cases')).json();
+        const totalPages = Math.ceil(total.length / CASES_PER_PAGE) || 1;
+        if (caseCurrentPage > totalPages) caseCurrentPage = totalPages;
+        loadCases();
+      } else {
+        showToast('删除失败', 'error');
+      }
+    }
+
+    document.getElementById('caseImageFile').addEventListener('change', async function() {
+      const file = this.files[0];
+      if (!file) return;
+      const id = document.getElementById('caseIdInput').value;
+      if (!id) {
+        showToast('请先填写或确认 ID', 'warning');
+        this.value = '';
+        return;
+      }
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('prefix', `product${id}`);
+      try {
+        const res = await fetch(API + '/api/upload', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (res.ok) {
+          const ext = getExtFromPath(data.path);
+          document.getElementById('caseImageExt').value = ext;
+          document.getElementById('caseImageName').textContent = `已上传: product${id}${ext}`;
+          const preview = document.getElementById('caseImagePreview');
+          preview.src = data.path + '?t=' + Date.now();
+          preview.onerror = function() { handleThumbError(preview, 'product' + id); };
+          preview.classList.remove('hidden');
+
+          const editingId = document.getElementById('caseId').value;
+          if (editingId) {
+            const casesRes = await fetch(API + '/api/cases');
+            const cases = await casesRes.json();
+            const c = cases.find(x => x.id == editingId);
+            if (c) {
+              c.imageExt = ext;
+              await fetch(API + '/api/cases/' + editingId, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(c)
+              });
+              loadCases();
+            }
+          }
+          showToast('图片上传成功', 'success');
+        } else {
+          showToast('上传失败：' + (data.error || '未知错误'), 'error');
+        }
+      } catch (err) {
+        showToast('上传出错：' + err.message, 'error');
+      }
+    });
+
+    document.getElementById('caseForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('caseIdInput').value;
+      const data = {
+        id: parseInt(id),
+        tagEn: document.getElementById('caseTagEn').value,
+        tagCn: document.getElementById('caseTagCn').value,
+        titleEn: document.getElementById('caseTitleEn').value,
+        titleCn: document.getElementById('caseTitleCn').value,
+        descEn: document.getElementById('caseDescEn').value,
+        descCn: document.getElementById('caseDescCn').value,
+        originEn: document.getElementById('caseOriginEn').value,
+        originCn: document.getElementById('caseOriginCn').value,
+        imageExt: document.getElementById('caseImageExt').value || '.jpg'
+      };
+      const editingId = document.getElementById('caseId').value;
+      if (editingId) {
+        const res = await fetch(API + '/api/cases/' + editingId, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        if (res.ok) { showToast('修改成功', 'success'); resetCaseForm(); loadCases(); }
+        else showToast('修改失败', 'error');
+      } else {
+        const res = await fetch(API + '/api/cases', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        if (res.ok) { showToast('新增成功', 'success'); resetCaseForm(); loadCases(); }
+        else showToast('新增失败', 'error');
+      }
+    });
+
+    // 初始化加载
+    loadProducts();
+    loadCases();
+    resetProductForm();
+    resetCaseForm();
+  </script>
+</body>
+</html>
