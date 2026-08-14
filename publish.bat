@@ -1,7 +1,8 @@
 @echo off
-set /p msg=请输入本次更新说明: 
+echo 当前目录: %cd%
+git status
 git add .
-git commit -m "%msg%"
+git commit -m "更新商品数据"
 git push origin main
 echo 发布完成！
 pause
