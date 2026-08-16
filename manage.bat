@@ -72,8 +72,8 @@ if errorlevel 1 (
 
 :publish_done
 echo.
-echo 发布操作结束，返回菜单...
-timeout /t 2 /nobreak >nul
+echo 操作结束，请按任意键返回菜单...
+pause >nul
 goto menu
 
 :start_server
@@ -92,8 +92,8 @@ if %errorlevel%==0 (
     echo 服务器已启动，请访问 http://localhost:3000/admin.html
 )
 echo.
-echo 返回菜单...
-timeout /t 1 /nobreak >nul
+echo 操作结束，请按任意键返回菜单...
+pause >nul
 goto menu
 
 :stop_server
@@ -115,8 +115,8 @@ echo 没有检测到正在运行的服务。
 
 :stop_done
 echo.
-echo 返回菜单...
-timeout /t 1 /nobreak >nul
+echo 操作结束，请按任意键返回菜单...
+pause >nul
 goto menu
 
 :end
