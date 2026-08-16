@@ -31,7 +31,6 @@ function readProductsFile() {
   if (!match) {
     throw new Error('products.js 格式错误');
   }
-  // 使用 Function 执行数组字面量，允许尾逗号等 JS 语法
   return new Function(`return ${match[1]};`)();
 }
 
@@ -60,18 +59,26 @@ function writeCasesFile(cases) {
   fs.writeFileSync(filePath, content, 'utf8');
 }
 
-// 删除指定前缀的所有图片（排除当前刚生成的 webp 时传入 excludeExt）
+// 删除指定前缀的所有图片（支持单图和多图命名规则）
 function deleteImagesByPrefix(prefix, excludeExt) {
-  const exts = ['.jpg', '.jpeg', '.png', '.avif', '.webp', '.gif'];
-  exts.forEach(ext => {
-    if (excludeExt && ext === excludeExt) return;
-    const filePath = path.join(__dirname, 'src', 'images', prefix + ext);
-    try {
-      if (fs.existsSync(filePath)) {
-        fs.rmSync(filePath, { force: true, maxRetries: 5, retryDelay: 100 });
+  const imagesDir = path.join(__dirname, 'src', 'images');
+  if (!fs.existsSync(imagesDir)) return;
+
+  const escapedPrefix = prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(`^${escapedPrefix}(-\\d+)?\\.(jpg|jpeg|png|avif|webp|gif)$`, 'i');
+
+  const files = fs.readdirSync(imagesDir);
+  files.forEach(file => {
+    if (regex.test(file)) {
+      const ext = file.substring(file.lastIndexOf('.')).toLowerCase();
+      if (excludeExt && ext === excludeExt) return;
+      const filePath = path.join(imagesDir, file);
+      try {
+        fs.rmSync(filePath, { force: true, maxRetries: 3, retryDelay: 200 });
+        console.log(`已删除图片: ${file}`);
+      } catch (err) {
+        console.warn(`删除图片失败（可忽略）: ${file} - ${err.message}`);
       }
-    } catch (err) {
-      console.warn(`删除文件失败（可忽略）: ${filePath} - ${err.message}`);
     }
   });
 }
@@ -133,7 +140,7 @@ app.get('/api/products', (req, res) => {
 app.post('/api/products', (req, res) => {
   try {
     const products = readProductsFile();
-    const { titleEn, titleCn, price, category, badge, alt, imageExt } = req.body;
+    const { titleEn, titleCn, price, category, badge, alt, imageExt, images } = req.body;
     const newId = products.length ? Math.max(...products.map(p => p.id)) + 1 : 1;
     const newProduct = {
       id: newId,
@@ -143,7 +150,8 @@ app.post('/api/products', (req, res) => {
       category: category || 'others',
       badge: badge || '',
       alt: alt || '',
-      imageExt: imageExt || '.jpg'
+      imageExt: imageExt || '.jpg',
+      images: Array.isArray(images) ? images : []
     };
     products.push(newProduct);
     writeProductsFile(products);
@@ -160,7 +168,7 @@ app.put('/api/products/:id', (req, res) => {
     const products = readProductsFile();
     const index = products.findIndex(p => p.id === id);
     if (index === -1) return res.status(404).json({ error: '商品不存在' });
-    const { titleEn, titleCn, price, category, badge, alt, imageExt } = req.body;
+    const { titleEn, titleCn, price, category, badge, alt, imageExt, images } = req.body;
     products[index] = {
       ...products[index],
       titleEn: titleEn !== undefined ? titleEn : products[index].titleEn,
@@ -169,7 +177,8 @@ app.put('/api/products/:id', (req, res) => {
       category: category !== undefined ? category : products[index].category,
       badge: badge !== undefined ? badge : products[index].badge,
       alt: alt !== undefined ? alt : products[index].alt,
-      imageExt: imageExt !== undefined ? imageExt : products[index].imageExt
+      imageExt: imageExt !== undefined ? imageExt : products[index].imageExt,
+      images: images !== undefined ? (Array.isArray(images) ? images : []) : products[index].images
     };
     writeProductsFile(products);
     res.json(products[index]);
@@ -187,7 +196,7 @@ app.delete('/api/products/:id', (req, res) => {
     if (index === -1) return res.status(404).json({ error: '商品不存在' });
     products = products.filter(p => p.id !== id);
     writeProductsFile(products);
-    // 删除对应商品图片
+    // 删除对应商品的所有图片（单图和多图）
     deleteImagesByPrefix(`p${id}`);
     res.json({ success: true });
   } catch (err) {
@@ -267,7 +276,7 @@ app.delete('/api/cases/:id', (req, res) => {
     if (index === -1) return res.status(404).json({ error: '案例不存在' });
     cases = cases.filter(c => c.id !== id);
     writeCasesFile(cases);
-    // 删除对应案例图片
+    // 删除对应案例的所有图片
     deleteImagesByPrefix(`product${id}`);
     res.json({ success: true });
   } catch (err) {

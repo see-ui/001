@@ -90,6 +90,41 @@
       padding: 6px;
     }
 
+    /* 多图预览容器 */
+    .multi-image-preview {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .multi-image-item {
+      position: relative;
+      width: 80px;
+      height: 80px;
+    }
+    .multi-image-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .multi-image-item .remove-img-btn {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: var(--danger);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 22px;
+      text-align: center;
+    }
+
     @media (max-width: 768px) {
       body { padding: 1rem; }
       .form-row { grid-template-columns: 1fr; }
@@ -111,6 +146,7 @@
     <form id="productForm">
       <input type="hidden" id="productId">
       <input type="hidden" id="productImageExt">
+      <input type="hidden" id="productImagesJson"> <!-- 新增：存储多图文件名数组的 JSON -->
       <div class="form-row">
         <div><label>ID</label><input type="number" id="productIdInput" placeholder="自动生成，可修改" required></div>
         <div><label>英文标题</label><input type="text" id="productTitleEn" placeholder="例如 Labubu Keychain"></div>
@@ -122,15 +158,16 @@
         <div><label>徽章（可选）</label><input type="text" id="productBadge" placeholder="例如 Hot<br>热卖"></div>
         <div><label>alt 描述</label><input type="text" id="productAlt" placeholder="例如 树脂"></div>
       </div>
-      <label>商品图片</label>
+      <label>商品图片（可多选，按顺序命名）</label>
       <div class="file-upload-row">
-        <input type="file" id="productImageFile" accept="image/*">
+        <input type="file" id="productImageFile" accept="image/*" multiple>
         <span id="productImageName" style="color: var(--text-light);"></span>
-        <img id="productImagePreview" class="img-preview hidden" src="" alt="预览">
       </div>
+      <div id="productImagesPreview" class="multi-image-preview"></div>
       <div style="margin-top: 1rem;">
         <button type="submit" class="btn-primary">💾 保存</button>
         <button type="button" class="btn-secondary" onclick="resetProductForm()">取消</button>
+        <button type="button" class="btn-danger" onclick="clearProductImages()">清空图片</button>
       </div>
     </form>
   </div>
@@ -225,7 +262,6 @@
       return parts.length > 1 ? '.' + parts[parts.length - 1] : '';
     }
 
-    // 图片加载失败时自动尝试其他常见扩展名
     window.handleThumbError = function(img, base) {
       const exts = ['.jpg', '.jpeg', '.png', '.avif', '.webp', '.gif'];
       let index = parseInt(img.dataset.fallbackIndex || '-1');
@@ -244,7 +280,10 @@
       }
     };
 
-    // ========== 商品管理（含分页和跳转） ==========
+    // ========== 商品管理（含多图上传） ==========
+    // 存储当前编辑中的图片文件名数组
+    let currentProductImages = [];
+
     async function loadProducts() {
       const res = await fetch(API + '/api/products');
       const products = await res.json();
@@ -258,12 +297,18 @@
 
       const tbody = document.getElementById('productTable');
       tbody.innerHTML = pageItems.map(p => {
-        const ext = p.imageExt || '.jpg';
-        const imgSrc = `/src/images/p${p.id}${ext}?t=${Date.now()}`;
+        // 确定缩略图：优先使用 images 数组的第一张，否则使用单图逻辑
+        let thumbSrc = '';
+        if (p.images && Array.isArray(p.images) && p.images.length > 0) {
+          thumbSrc = `/src/images/${p.images[0]}?t=${Date.now()}`;
+        } else {
+          const ext = p.imageExt || '.jpg';
+          thumbSrc = `/src/images/p${p.id}${ext}?t=${Date.now()}`;
+        }
         return `
         <tr>
           <td>${p.id}</td>
-          <td><img class="table-thumb" src="${imgSrc}" alt="商品图" onerror="handleThumbError(this, 'p${p.id}')"></td>
+          <td><img class="table-thumb" src="${thumbSrc}" alt="商品图" onerror="handleThumbError(this, 'p${p.id}')"></td>
           <td>${p.titleEn || ''}</td>
           <td>${p.titleCn || ''}</td>
           <td>${p.price || ''}</td>
@@ -309,8 +354,11 @@
       document.getElementById('productForm').reset();
       document.getElementById('productId').value = '';
       document.getElementById('productImageExt').value = '';
+      document.getElementById('productImagesJson').value = '';
       document.getElementById('productImageName').textContent = '';
-      document.getElementById('productImagePreview').classList.add('hidden');
+      // 清空预览
+      document.getElementById('productImagesPreview').innerHTML = '';
+      currentProductImages = [];
       document.getElementById('productFormTitle').innerText = '新增商品';
       fetch(API + '/api/products').then(r => r.json()).then(products => {
         const nextId = products.length ? Math.max(...products.map(p => p.id)) + 1 : 1;
@@ -318,11 +366,108 @@
       });
     }
 
+    // 清空图片数组
+    function clearProductImages() {
+      currentProductImages = [];
+      document.getElementById('productImagesJson').value = '[]';
+      document.getElementById('productImagesPreview').innerHTML = '';
+      document.getElementById('productImageName').textContent = '';
+      showToast('图片已清空', 'info');
+    }
+
+    // 渲染多图预览
+    function renderProductImagesPreview() {
+      const container = document.getElementById('productImagesPreview');
+      container.innerHTML = '';
+      currentProductImages.forEach((file, index) => {
+        const div = document.createElement('div');
+        div.className = 'multi-image-item';
+        div.innerHTML = `
+          <img src="/src/images/${file}?t=${Date.now()}" alt="图片${index+1}">
+          <button type="button" class="remove-img-btn" onclick="removeProductImage(${index})">×</button>
+        `;
+        container.appendChild(div);
+      });
+      document.getElementById('productImagesJson').value = JSON.stringify(currentProductImages);
+    }
+
+    // 移除指定索引的图片
+    window.removeProductImage = function(index) {
+      currentProductImages.splice(index, 1);
+      renderProductImagesPreview();
+      showToast('已移除图片', 'info');
+    };
+
+    // 上传多张图片
+    async function uploadProductImages(files, productId) {
+      const uploadedNames = [];
+      for (let i = 0; i < files.length; i++) {
+        const formData = new FormData();
+        formData.append('image', files[i]);
+        formData.append('prefix', `p${productId}-${i + 1}`); // 从 -1 开始
+        try {
+          const res = await fetch(API + '/api/upload', { method: 'POST', body: formData });
+          const data = await res.json();
+          if (res.ok) {
+            // 提取文件名（例如 p1-1.webp）
+            const fileName = data.path.substring(data.path.lastIndexOf('/') + 1);
+            uploadedNames.push(fileName);
+          } else {
+            throw new Error(data.error || '上传失败');
+          }
+        } catch (err) {
+          showToast(`第 ${i+1} 张上传失败：${err.message}`, 'error');
+          throw err; // 终止后续上传
+        }
+      }
+      return uploadedNames;
+    }
+
+    // 处理文件选择
+    document.getElementById('productImageFile').addEventListener('change', async function() {
+      const files = Array.from(this.files);
+      if (files.length === 0) return;
+
+      const id = document.getElementById('productIdInput').value;
+      if (!id) {
+        showToast('请先填写或确认 ID', 'warning');
+        this.value = '';
+        return;
+      }
+
+      // 先清空原有图片列表，准备上传新图
+      currentProductImages = [];
+      document.getElementById('productImagesPreview').innerHTML = '';
+      document.getElementById('productImageName').textContent = `正在上传 ${files.length} 张图片...`;
+
+      try {
+        const uploadedNames = await uploadProductImages(files, id);
+        currentProductImages = uploadedNames;
+        renderProductImagesPreview();
+        document.getElementById('productImageName').textContent = `已上传 ${uploadedNames.length} 张图片`;
+        // 更新隐藏字段
+        document.getElementById('productImagesJson').value = JSON.stringify(currentProductImages);
+        // 如果至少上传了一张，更新 imageExt 为第一张的扩展名（可选）
+        if (uploadedNames.length > 0) {
+          const ext = getExtFromPath(uploadedNames[0]);
+          document.getElementById('productImageExt').value = ext;
+        }
+        showToast('图片上传成功', 'success');
+      } catch (err) {
+        document.getElementById('productImageName').textContent = '';
+        showToast('上传出错：' + err.message, 'error');
+      } finally {
+        this.value = '';
+      }
+    });
+
+    // 编辑商品时填充数据
     async function editProduct(id) {
       const res = await fetch(API + '/api/products');
       const products = await res.json();
       const p = products.find(x => x.id === id);
       if (!p) return;
+
       document.getElementById('productId').value = p.id;
       document.getElementById('productIdInput').value = p.id;
       document.getElementById('productTitleEn').value = p.titleEn || '';
@@ -333,13 +478,20 @@
       document.getElementById('productCategory').value = p.category || 'others';
       document.getElementById('productBadge').value = p.badge || '';
       document.getElementById('productAlt').value = p.alt || '';
-      const ext = p.imageExt || '.jpg';
-      document.getElementById('productImageExt').value = ext;
-      document.getElementById('productImageName').textContent = `当前图片: p${p.id}${ext}`;
-      const preview = document.getElementById('productImagePreview');
-      preview.src = `/src/images/p${p.id}${ext}?t=${Date.now()}`;
-      preview.onerror = function() { handleThumbError(preview, 'p' + p.id); };
-      preview.classList.remove('hidden');
+      document.getElementById('productImageExt').value = p.imageExt || '.jpg';
+
+      // 处理图片数组
+      if (p.images && Array.isArray(p.images) && p.images.length > 0) {
+        currentProductImages = [...p.images];
+      } else {
+        // 如果没有 images，则根据 imageExt 生成单图文件名
+        const ext = p.imageExt || '.jpg';
+        currentProductImages = [`p${p.id}${ext}`];
+      }
+      document.getElementById('productImagesJson').value = JSON.stringify(currentProductImages);
+      renderProductImagesPreview();
+      document.getElementById('productImageName').textContent = `当前 ${currentProductImages.length} 张图片`;
+
       document.getElementById('productFormTitle').innerText = '编辑商品';
       window.scrollTo(0, 0);
     }
@@ -358,58 +510,19 @@
       }
     }
 
-    document.getElementById('productImageFile').addEventListener('change', async function() {
-      const file = this.files[0];
-      if (!file) return;
-      const id = document.getElementById('productIdInput').value;
-      if (!id) {
-        showToast('请先填写或确认 ID', 'warning');
-        this.value = '';
-        return;
-      }
-      const formData = new FormData();
-      formData.append('image', file);
-      formData.append('prefix', `p${id}`);
-      try {
-        const res = await fetch(API + '/api/upload', { method: 'POST', body: formData });
-        const data = await res.json();
-        if (res.ok) {
-          const ext = getExtFromPath(data.path);
-          document.getElementById('productImageExt').value = ext;
-          document.getElementById('productImageName').textContent = `已上传: p${id}${ext}`;
-          const preview = document.getElementById('productImagePreview');
-          preview.src = data.path + '?t=' + Date.now();
-          preview.onerror = function() { handleThumbError(preview, 'p' + id); };
-          preview.classList.remove('hidden');
-
-          const editingId = document.getElementById('productId').value;
-          if (editingId) {
-            const productsRes = await fetch(API + '/api/products');
-            const products = await productsRes.json();
-            const p = products.find(x => x.id == editingId);
-            if (p) {
-              p.imageExt = ext;
-              await fetch(API + '/api/products/' + editingId, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(p)
-              });
-              loadProducts();
-            }
-          }
-          showToast('图片上传成功', 'success');
-        } else {
-          showToast('上传失败：' + (data.error || '未知错误'), 'error');
-        }
-      } catch (err) {
-        showToast('上传出错：' + err.message, 'error');
-      }
-    });
-
+    // 商品表单提交
     document.getElementById('productForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const id = document.getElementById('productIdInput').value;
       const rawPrice = document.getElementById('productPrice').value;
+      const imagesJson = document.getElementById('productImagesJson').value;
+      let images = [];
+      try {
+        images = JSON.parse(imagesJson);
+      } catch(err) {
+        images = [];
+      }
+
       const data = {
         id: parseInt(id),
         titleEn: document.getElementById('productTitleEn').value,
@@ -418,8 +531,10 @@
         category: document.getElementById('productCategory').value,
         badge: document.getElementById('productBadge').value,
         alt: document.getElementById('productAlt').value,
-        imageExt: document.getElementById('productImageExt').value || '.jpg'
+        imageExt: document.getElementById('productImageExt').value || '.jpg',
+        images: images // 添加 images 数组
       };
+
       const editingId = document.getElementById('productId').value;
       if (editingId) {
         const res = await fetch(API + '/api/products/' + editingId, {
@@ -440,7 +555,7 @@
       }
     });
 
-    // ========== 案例管理（含分页和跳转） ==========
+    // ========== 案例管理（保持单图） ==========
     async function loadCases() {
       const res = await fetch(API + '/api/cases');
       const cases = await res.json();
@@ -576,22 +691,6 @@
           preview.src = data.path + '?t=' + Date.now();
           preview.onerror = function() { handleThumbError(preview, 'product' + id); };
           preview.classList.remove('hidden');
-
-          const editingId = document.getElementById('caseId').value;
-          if (editingId) {
-            const casesRes = await fetch(API + '/api/cases');
-            const cases = await casesRes.json();
-            const c = cases.find(x => x.id == editingId);
-            if (c) {
-              c.imageExt = ext;
-              await fetch(API + '/api/cases/' + editingId, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(c)
-              });
-              loadCases();
-            }
-          }
           showToast('图片上传成功', 'success');
         } else {
           showToast('上传失败：' + (data.error || '未知错误'), 'error');

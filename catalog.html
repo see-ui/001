@@ -158,6 +158,46 @@
                 font-size: 30px !important;
             }
         }
+
+        /* 多图切换箭头样式 */
+        .modal-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0,0,0,0.5);
+            color: white;
+            border: none;
+            font-size: 2rem;
+            padding: 10px 18px;
+            cursor: pointer;
+            border-radius: 50%;
+            z-index: 100000;
+            transition: background 0.2s;
+        }
+        .modal-nav:hover {
+            background: rgba(0,0,0,0.8);
+        }
+        .modal-nav.prev {
+            left: 20px;
+        }
+        .modal-nav.next {
+            right: 20px;
+        }
+        @media (max-width: 768px) {
+            .modal-nav {
+                font-size: 1.5rem;
+                padding: 8px 14px;
+            }
+            .modal-nav.prev {
+                left: 10px;
+            }
+            .modal-nav.next {
+                right: 10px;
+            }
+        }
+        .modal-nav.hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -211,9 +251,12 @@
         <p>&copy; 2026 xuqiec. All Rights Reserved.</p>
     </footer>
 
+    <!-- 图片放大弹窗结构（增加左右切换箭头） -->
     <div id="imageModal" class="image-modal">
         <span class="modal-close">&times;</span>
+        <button class="modal-nav prev" id="modalPrevBtn">&#10094;</button>
         <img class="modal-content" id="modalImg">
+        <button class="modal-nav next" id="modalNextBtn">&#10095;</button>
         <div id="modalCaption" class="modal-caption"></div>
     </div>
 
@@ -247,6 +290,10 @@
             const pageInput = document.getElementById("pageInput");
             const jumpBtn = document.getElementById("jumpBtn");
 
+            // 多图弹窗状态
+            let modalImages = [];
+            let modalCurrentIndex = 0;
+
             function renderPage(page) {
                 gridContainer.innerHTML = "";
                 const start = (page - 1) * ITEMS_PER_PAGE;
@@ -255,11 +302,28 @@
                 pageItems.forEach(item => {
                     const hasBadge = item.badge && item.badge.trim() !== "";
                     const titleHtml = `${item.titleEn || item.titleCn}<br>${item.titleCn}`;
+
+                    // 获取该商品的图片列表
+                    let images = [];
+                    if (item.images && Array.isArray(item.images) && item.images.length > 0) {
+                        images = item.images.map(img => `src/images/${img}`);
+                    } else {
+                        // 单图兼容
+                        const ext = item.imageExt || '.jpg';
+                        images = [`src/images/p${item.id}${ext}`];
+                    }
+
+                    const coverSrc = images[0];
+
                     const cardHtml = `
                         <div class="product-item ${hasBadge ? 'sold-out-item' : ''}" data-category="${item.category}">
                             <div class="product-item-image-wrapper">
                                 ${hasBadge ? `<span class="sold-out-badge">${item.badge}</span>` : ''}
-                                <img src="src/images/p${item.id}${item.imageExt || '.jpg'}" alt="${item.alt || item.titleCn}" loading="lazy" onerror="handleProductImageError(this, 'p${item.id}')">
+                                <img src="${coverSrc}" alt="${item.alt || item.titleCn}" 
+                                     loading="lazy" 
+                                     data-images='${JSON.stringify(images)}'
+                                     data-title="${titleHtml.replace(/"/g, '&quot;')}"
+                                     ${item.images ? '' : `onerror="handleProductImageError(this, 'p${item.id}')"`}>
                             </div>
                             <h3 class="product-item-title">${titleHtml}</h3>
                             <p class="product-item-price">${item.price}</p>
@@ -292,24 +356,65 @@
                 if (e.key === "Enter") handleJump();
             });
 
+            // 绑定弹窗及多图切换
             function bindImageModal() {
                 const modal = document.getElementById("imageModal");
                 const modalImg = document.getElementById("modalImg");
                 const captionText = document.getElementById("modalCaption");
+                const prevModalBtn = document.getElementById("modalPrevBtn");
+                const nextModalBtn = document.getElementById("modalNextBtn");
+
                 document.querySelectorAll(".product-item-image-wrapper img").forEach(img => {
                     img.style.cursor = "zoom-in";
                     img.onclick = function() {
+                        let images = [];
+                        try {
+                            images = JSON.parse(this.getAttribute('data-images'));
+                        } catch(e) {
+                            images = [this.src];
+                        }
+                        modalImages = images;
+                        modalCurrentIndex = 0;
+                        updateModalImage();
                         modal.style.display = "flex";
-                        modalImg.src = this.src;
-                        const title = this.closest(".product-item").querySelector(".product-item-title").innerText.replace('\n', ' ');
-                        captionText.textContent = title;
                     };
                 });
-            }
 
-            const modal = document.getElementById("imageModal");
-            document.querySelector(".modal-close").onclick = () => modal.style.display = "none";
-            modal.onclick = (e) => { if (e.target === modal) modal.style.display = "none"; };
+                // 箭头切换
+                prevModalBtn.onclick = function(e) {
+                    e.stopPropagation();
+                    if (modalImages.length > 1) {
+                        modalCurrentIndex = (modalCurrentIndex - 1 + modalImages.length) % modalImages.length;
+                        updateModalImage();
+                    }
+                };
+                nextModalBtn.onclick = function(e) {
+                    e.stopPropagation();
+                    if (modalImages.length > 1) {
+                        modalCurrentIndex = (modalCurrentIndex + 1) % modalImages.length;
+                        updateModalImage();
+                    }
+                };
+
+                function updateModalImage() {
+                    modalImg.src = modalImages[modalCurrentIndex];
+                    captionText.textContent = ''; // 可自行设置显示标题
+                    // 显示/隐藏箭头
+                    if (modalImages.length <= 1) {
+                        prevModalBtn.classList.add('hidden');
+                        nextModalBtn.classList.add('hidden');
+                    } else {
+                        prevModalBtn.classList.remove('hidden');
+                        nextModalBtn.classList.remove('hidden');
+                    }
+                }
+
+                // 关闭弹窗
+                document.querySelector(".modal-close").onclick = () => modal.style.display = "none";
+                modal.onclick = (e) => { 
+                    if (e.target === modal) modal.style.display = "none"; 
+                };
+            }
 
             nextBtn.onclick = function() {
                 if (currentPage < totalPages) {
@@ -328,6 +433,7 @@
             renderPage(currentPage);
         });
 
+        // 商品单图加载失败时自动尝试其他扩展名（用于兼容旧数据）
         window.handleProductImageError = function(img, base) {
             const exts = ['.jpg', '.jpeg', '.png', '.avif', '.webp', '.gif'];
             let index = parseInt(img.dataset.fallbackIndex || '-1');
@@ -341,6 +447,7 @@
                 img.src = `src/images/${base}${exts[index]}`;
             } else {
                 img.onerror = null;
+                img.style.display = 'none';
             }
         };
     </script>
