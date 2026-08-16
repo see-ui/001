@@ -80,7 +80,7 @@ const productsCaseData = [
         "descEn": "",
         "descCn": "",
         "originEn": "from burkina faso",
-        "originCn": "美国",
+        "originCn": "布基纳法索",
         "imageExt": ".webp"
     },
     {
