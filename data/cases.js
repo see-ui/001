@@ -8,7 +8,8 @@ const productsCaseData = [
         "descEn": "Custom‑made for a top‑tier Korean fashion designer",
         "descCn": "Y2K 设计",
         "originEn": "From South Korea",
-        "originCn": "韩国"
+        "originCn": "韩国",
+        "imageExt": ".webp"
     },
     {
         "id": 2,
@@ -19,7 +20,8 @@ const productsCaseData = [
         "descEn": "High‑end Customized Products to Meet Enterprise‑level Business Requirements",
         "descCn": "高端定制化产品，满足企业级业务需求。",
         "originEn": "From Italy",
-        "originCn": "意大利"
+        "originCn": "意大利",
+        "imageExt": ".webp"
     },
     {
         "id": 3,
@@ -30,7 +32,8 @@ const productsCaseData = [
         "descEn": "High‑quality Products Expand Your Market",
         "descCn": "高质的产品为您拓宽市场",
         "originEn": "From Senegal",
-        "originCn": "塞内加尔"
+        "originCn": "塞内加尔",
+        "imageExt": ".webp"
     },
     {
         "id": 4,

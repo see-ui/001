@@ -325,6 +325,37 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
   }
 });
 
+// API：手动清理所有非 webp 格式的商品/案例图片
+app.post('/api/cleanup-images', (req, res) => {
+  try {
+    const imagesDir = path.join(__dirname, 'src', 'images');
+    if (!fs.existsSync(imagesDir)) {
+      return res.json({ success: true, deletedCount: 0 });
+    }
+
+    const files = fs.readdirSync(imagesDir);
+    let deletedCount = 0;
+
+    files.forEach(file => {
+      // 匹配 p 或 product 开头，且不是 .webp 格式
+      if (/^(p|product)\d+(-\d+)?\.(jpg|jpeg|png|avif|gif)$/i.test(file)) {
+        const filePath = path.join(imagesDir, file);
+        try {
+          fs.rmSync(filePath, { force: true, maxRetries: 3, retryDelay: 200 });
+          console.log(`已清理旧格式图片: ${file}`);
+          deletedCount++;
+        } catch (err) {
+          console.warn(`无法清理旧格式图片（可忽略）: ${file} - ${err.message}`);
+        }
+      }
+    });
+
+    res.json({ success: true, deletedCount });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`本地管理服务运行在 http://localhost:${PORT}`);
   console.log(`打开 http://localhost:${PORT}/admin.html 进入管理后台`);

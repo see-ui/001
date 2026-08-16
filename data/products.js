@@ -6,7 +6,12 @@ const productsData = [
         "price": "$ 0.76",
         "category": "keychain",
         "badge": "Hot<br>热卖",
-        "alt": "树脂"
+        "alt": "树脂",
+        "imageExt": ".webp",
+        "images": [
+            "p1-1.webp",
+            "p1-2.webp"
+        ]
     },
     {
         "id": 2,
@@ -15,7 +20,12 @@ const productsData = [
         "price": "$ 0.94",
         "category": "keychain",
         "badge": "",
-        "alt": "植绒钥匙扣"
+        "alt": "植绒钥匙扣",
+        "imageExt": ".webp",
+        "images": [
+            "p2-1.webp",
+            "p2-2.webp"
+        ]
     },
     {
         "id": 3,
@@ -24,7 +34,12 @@ const productsData = [
         "price": "$ 0.76",
         "category": "keychain",
         "badge": "",
-        "alt": "渐变"
+        "alt": "渐变",
+        "imageExt": ".webp",
+        "images": [
+            "p3-1.webp",
+            "p3-2.webp"
+        ]
     },
     {
         "id": 4,
@@ -33,7 +48,11 @@ const productsData = [
         "price": "$ 2.52",
         "category": "keychain",
         "badge": "",
-        "alt": "皮质钥匙扣"
+        "alt": "皮质钥匙扣",
+        "imageExt": ".webp",
+        "images": [
+            "p4-1.webp"
+        ]
     },
     {
         "id": 5,
@@ -42,7 +61,12 @@ const productsData = [
         "price": "$ 2.52",
         "category": "keychain",
         "badge": "",
-        "alt": "三丽欧"
+        "alt": "三丽欧",
+        "imageExt": ".webp",
+        "images": [
+            "p5-1.webp",
+            "p5-2.webp"
+        ]
     },
     {
         "id": 6,
@@ -51,7 +75,12 @@ const productsData = [
         "price": "$ 1.13",
         "category": "keychain",
         "badge": "",
-        "alt": "三丽欧"
+        "alt": "三丽欧",
+        "imageExt": ".webp",
+        "images": [
+            "p6-1.webp",
+            "p6-2.webp"
+        ]
     },
     {
         "id": 7,
@@ -60,7 +89,12 @@ const productsData = [
         "price": "$ 0.96",
         "category": "keychain",
         "badge": "",
-        "alt": "三丽欧"
+        "alt": "三丽欧",
+        "imageExt": ".webp",
+        "images": [
+            "p7-1.webp",
+            "p7-2.webp"
+        ]
     },
     {
         "id": 8,
@@ -69,7 +103,12 @@ const productsData = [
         "price": "$ 1.17",
         "category": "keychain",
         "badge": "",
-        "alt": "三丽欧"
+        "alt": "三丽欧",
+        "imageExt": ".webp",
+        "images": [
+            "p8-1.webp",
+            "p8-2.webp"
+        ]
     },
     {
         "id": 9,
@@ -78,7 +117,12 @@ const productsData = [
         "price": "$ 12.4",
         "category": "jewelry",
         "badge": "",
-        "alt": "潘多拉"
+        "alt": "潘多拉",
+        "imageExt": ".webp",
+        "images": [
+            "p9-1.webp",
+            "p9-2.webp"
+        ]
     },
     {
         "id": 11,
@@ -87,7 +131,12 @@ const productsData = [
         "price": "$ 28.92",
         "category": "jewelry",
         "badge": "",
-        "alt": "lv"
+        "alt": "lv",
+        "imageExt": ".webp",
+        "images": [
+            "p10-1.webp",
+            "p10-2.webp"
+        ]
     },
     {
         "id": 10,
@@ -96,7 +145,13 @@ const productsData = [
         "price": "$ 302.54",
         "category": "others",
         "badge": "",
-        "alt": "劳力士"
+        "alt": "劳力士",
+        "imageExt": ".webp",
+        "images": [
+            "p10-1.webp",
+            "p10-2.webp",
+            "p10-3.webp"
+        ]
     },
     {
         "id": 12,
@@ -105,7 +160,12 @@ const productsData = [
         "price": "$ 25.95",
         "category": "jewelry",
         "badge": "",
-        "alt": "lv"
+        "alt": "lv",
+        "imageExt": ".webp",
+        "images": [
+            "p12-1.webp",
+            "p12-2.webp"
+        ]
     },
     {
         "id": 13,
@@ -114,7 +174,12 @@ const productsData = [
         "price": "$ 30.4",
         "category": "jewelry",
         "badge": "",
-        "alt": "Hermes"
+        "alt": "Hermes",
+        "imageExt": ".webp",
+        "images": [
+            "p13-1.webp",
+            "p13-2.webp"
+        ]
     },
     {
         "id": 14,
@@ -123,7 +188,12 @@ const productsData = [
         "price": "$ 30.4",
         "category": "jewelry",
         "badge": "",
-        "alt": "Hermes"
+        "alt": "Hermes",
+        "imageExt": ".webp",
+        "images": [
+            "p14-1.webp",
+            "p14-2.webp"
+        ]
     },
     {
         "id": 15,
@@ -132,7 +202,12 @@ const productsData = [
         "price": "$ 33.37",
         "category": "jewelry",
         "badge": "",
-        "alt": "Chrome Hearts"
+        "alt": "Chrome Hearts",
+        "imageExt": ".webp",
+        "images": [
+            "p15-1.webp",
+            "p15-2.webp"
+        ]
     },
     {
         "id": 16,
@@ -252,7 +327,11 @@ const productsData = [
         "category": "keychain",
         "badge": "",
         "alt": "",
-        "imageExt": ".jpg"
+        "imageExt": ".webp",
+        "images": [
+            "p27-1.webp",
+            "p27-2.webp"
+        ]
     },
     {
         "id": 28,
@@ -343,5 +422,47 @@ const productsData = [
         "badge": "",
         "alt": "",
         "imageExt": ".webp"
+    },
+    {
+        "id": 37,
+        "titleEn": "miffy",
+        "titleCn": "米菲兔",
+        "price": "$ 3.08",
+        "category": "keychain",
+        "badge": "",
+        "alt": "",
+        "imageExt": ".webp",
+        "images": [
+            "p37-1.webp",
+            "p37-2.webp"
+        ]
+    },
+    {
+        "id": 38,
+        "titleEn": "Toy Story",
+        "titleCn": "玩具总动员-p38",
+        "price": "$ 3.94",
+        "category": "keychain",
+        "badge": "",
+        "alt": "",
+        "imageExt": ".webp",
+        "images": [
+            "p38-1.webp",
+            "p38-2.webp"
+        ]
+    },
+    {
+        "id": 39,
+        "titleEn": "Toy Story",
+        "titleCn": "玩具总动员-p39",
+        "price": "$ 3.29",
+        "category": "keychain",
+        "badge": "",
+        "alt": "",
+        "imageExt": ".webp",
+        "images": [
+            "p39-1.webp",
+            "p39-2.webp"
+        ]
     }
 ];
