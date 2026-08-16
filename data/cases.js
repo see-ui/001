@@ -58,5 +58,65 @@ const productsCaseData = [
         "originEn": "From the Netherlands",
         "originCn": "荷兰",
         "imageExt": ".webp"
+    },
+    {
+        "id": 6,
+        "tagEn": "Leather series customization",
+        "tagCn": "皮革系列定制",
+        "titleEn": "Leather keychain",
+        "titleCn": "皮革钥匙扣",
+        "descEn": "",
+        "descCn": "",
+        "originEn": "From Burkina Faso",
+        "originCn": "布基纳法索",
+        "imageExt": ".webp"
+    },
+    {
+        "id": 7,
+        "tagEn": "Acrylic series",
+        "tagCn": "亚克力系列",
+        "titleEn": "acrylic keychain",
+        "titleCn": "亚克力钥匙扣",
+        "descEn": "",
+        "descCn": "",
+        "originEn": "from burkina faso",
+        "originCn": "美国",
+        "imageExt": ".webp"
+    },
+    {
+        "id": 8,
+        "tagEn": "Acrylic series",
+        "tagCn": "亚克力系列",
+        "titleEn": "acrylic keychain",
+        "titleCn": "亚克力钥匙扣",
+        "descEn": "",
+        "descCn": "",
+        "originEn": "from the United States",
+        "originCn": "美国",
+        "imageExt": ".webp"
+    },
+    {
+        "id": 9,
+        "tagEn": "Silicone series",
+        "tagCn": "硅胶系列",
+        "titleEn": "Silicone keychain",
+        "titleCn": "硅胶钥匙扣",
+        "descEn": "",
+        "descCn": "",
+        "originEn": "from the United States",
+        "originCn": "美国",
+        "imageExt": ".webp"
+    },
+    {
+        "id": 10,
+        "tagEn": "Acrylic series",
+        "tagCn": "亚克力系列",
+        "titleEn": "acrylic keychain",
+        "titleCn": "亚克力钥匙扣",
+        "descEn": "",
+        "descCn": "",
+        "originEn": "From Switzerland",
+        "originCn": "瑞士",
+        "imageExt": ".webp"
     }
 ];

@@ -65,7 +65,13 @@ echo.
 echo 正在推送到 GitHub...
 git push origin main
 if errorlevel 1 (
-    echo [错误] 推送失败，请检查上方错误信息。
+    echo 普通推送失败，正在尝试强制推送...
+    git push -f origin main
+    if errorlevel 1 (
+        echo [错误] 强制推送也失败，请检查上方错误信息。
+    ) else (
+        echo 强制推送成功！
+    )
 ) else (
     echo 推送成功！
 )

@@ -134,8 +134,8 @@ const productsData = [
         "alt": "lv",
         "imageExt": ".webp",
         "images": [
-            "p10-1.webp",
-            "p10-2.webp"
+            "p11-1.webp",
+            "p11-2.webp"
         ]
     },
     {

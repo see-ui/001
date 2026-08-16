@@ -503,7 +503,7 @@
       document.getElementById('productImageName').textContent = `当前 ${currentProductImages.length} 张图片`;
 
       document.getElementById('productFormTitle').innerText = '编辑商品';
-      window.scrollTo(0, 0);
+      document.getElementById('productForm').scrollIntoView({ behavior: 'smooth' });
     }
 
     async function deleteProduct(id) {
@@ -660,7 +660,7 @@
       preview.onerror = function() { handleThumbError(preview, 'product' + c.id); };
       preview.classList.remove('hidden');
       document.getElementById('caseFormTitle').innerText = '编辑案例';
-      window.scrollTo(0, 0);
+      document.getElementById('caseForm').scrollIntoView({ behavior: 'smooth' });
     }
 
     async function deleteCase(id) {
