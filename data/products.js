@@ -464,5 +464,102 @@ const productsData = [
             "p39-1.webp",
             "p39-2.webp"
         ]
+    },
+    {
+        "id": 40,
+        "titleEn": "Demon Slayer",
+        "titleCn": "鬼灭之刃-p40",
+        "price": "$ 0.86",
+        "category": "keychain",
+        "badge": "",
+        "alt": "",
+        "imageExt": ".webp",
+        "images": [
+            "p40-1.webp",
+            "p40-2.webp"
+        ]
+    },
+    {
+        "id": 41,
+        "titleEn": "Demon Slayer",
+        "titleCn": "鬼灭之刃-p41",
+        "price": "$ 1.17",
+        "category": "keychain",
+        "badge": "",
+        "alt": "",
+        "imageExt": ".webp",
+        "images": [
+            "p41-1.webp",
+            "p41-2.webp"
+        ]
+    },
+    {
+        "id": 42,
+        "titleEn": "Demon Slayer",
+        "titleCn": "鬼灭之刃-p42",
+        "price": "$ 1.11",
+        "category": "keychain",
+        "badge": "",
+        "alt": "",
+        "imageExt": ".webp",
+        "images": [
+            "p42-1.webp",
+            "p42-2.webp"
+        ]
+    },
+    {
+        "id": 43,
+        "titleEn": "Demon Slayer",
+        "titleCn": "鬼灭之刃-p43",
+        "price": "$ 3.53",
+        "category": "keychain",
+        "badge": "",
+        "alt": "",
+        "imageExt": ".webp",
+        "images": [
+            "p43-1.webp",
+            "p43-2.webp"
+        ]
+    },
+    {
+        "id": 44,
+        "titleEn": "Demon Slayer",
+        "titleCn": "鬼灭之刃-p42",
+        "price": "$ 1.31",
+        "category": "keychain",
+        "badge": "",
+        "alt": "",
+        "imageExt": ".webp",
+        "images": [
+            "p44-1.webp",
+            "p44-2.webp"
+        ]
+    },
+    {
+        "id": 45,
+        "titleEn": "One Piece",
+        "titleCn": "海贼王",
+        "price": "$ 0.87",
+        "category": "keychain",
+        "badge": "",
+        "alt": "",
+        "imageExt": ".webp",
+        "images": [
+            "p45-1.webp",
+            "p45-2.webp"
+        ]
+    },
+    {
+        "id": 46,
+        "titleEn": "One Piece",
+        "titleCn": "海贼王",
+        "price": "$ 0.87",
+        "category": "keychain",
+        "badge": "",
+        "alt": "",
+        "imageExt": ".webp",
+        "images": [
+            "p46-1.webp"
+        ]
     }
 ];
